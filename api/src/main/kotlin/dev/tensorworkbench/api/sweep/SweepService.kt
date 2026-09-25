@@ -1,5 +1,6 @@
 package dev.tensorworkbench.api.sweep
 
+import dev.tensorworkbench.api.db.normalized
 import dev.tensorworkbench.api.config.WorkbenchProperties
 import dev.tensorworkbench.api.dataset.DatasetService
 import dev.tensorworkbench.api.dataset.Submission
@@ -258,9 +259,9 @@ class SweepService(
             id = s.id,
             datasetId = s.datasetId,
             parameter = s.parameter,
-            start = s.start.stripTrailingZeros(),
-            end = s.end.stripTrailingZeros(),
-            step = s.step.stripTrailingZeros(),
+            start = s.start.normalized(),
+            end = s.end.normalized(),
+            step = s.step.normalized(),
             variantCount = s.variantCount,
             implementationVersion = s.implementationVersion,
             fixedGain = fixed?.get("gain")?.asString()?.let(::BigDecimal),

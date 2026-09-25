@@ -28,3 +28,7 @@ fun <T> TransactionTemplate.inTx(block: () -> T): T = execute { block() } as T
 
 /** Elements of a JSON array node as a Kotlin list. */
 fun JsonNode.elementList(): List<JsonNode> = (0 until size()).map { get(it) }
+
+/** Removes trailing zeros without switching to exponent notation (10 stays "10", not "1E+1"). */
+fun java.math.BigDecimal.normalized(): java.math.BigDecimal =
+    stripTrailingZeros().let { if (it.scale() < 0) it.setScale(0) else it }

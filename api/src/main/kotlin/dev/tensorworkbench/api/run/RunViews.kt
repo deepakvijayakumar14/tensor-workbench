@@ -1,5 +1,6 @@
 package dev.tensorworkbench.api.run
 
+import dev.tensorworkbench.api.db.normalized
 import dev.tensorworkbench.api.artifact.ArtifactView
 import tools.jackson.databind.JsonNode
 import java.math.BigDecimal
@@ -49,8 +50,8 @@ data class RunView(
                 datasetId = run.datasetId,
                 sweepId = run.sweepId,
                 sweepOrdinal = run.sweepOrdinal,
-                gain = run.gain.stripTrailingZeros(),
-                bias = run.bias.stripTrailingZeros(),
+                gain = run.gain.normalized(),
+                bias = run.bias.normalized(),
                 implementationVersion = run.implementationVersion,
                 state = run.state,
                 stage = stage(row, now),

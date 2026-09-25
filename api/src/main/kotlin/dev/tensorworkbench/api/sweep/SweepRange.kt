@@ -1,5 +1,6 @@
 package dev.tensorworkbench.api.sweep
 
+import dev.tensorworkbench.api.db.normalized
 import java.math.BigDecimal
 import java.math.RoundingMode
 
@@ -21,6 +22,6 @@ object SweepRange {
 
     fun expand(start: BigDecimal, end: BigDecimal, step: BigDecimal): List<BigDecimal> {
         val n = count(start, end, step)
-        return (0 until n).map { k -> start.add(step.multiply(BigDecimal.valueOf(k))).stripTrailingZeros() }
+        return (0 until n).map { k -> start.add(step.multiply(BigDecimal.valueOf(k))).normalized() }
     }
 }
