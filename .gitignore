@@ -21,3 +21,4 @@ benchmark-results/
 *.iml
 .vscode/
 .DS_Store
+*.tsbuildinfo
