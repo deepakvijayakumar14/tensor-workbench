@@ -1,0 +1,23 @@
+# Build products
+api/build/
+api/.gradle/
+api/.kotlin/
+web/dist/
+web/node_modules/
+e2e/.venv/
+worker/.venv/
+**/__pycache__/
+**/.pytest_cache/
+*.pyc
+
+# Local secrets and generated data
+.env
+*.npy
+*.u8
+benchmark-results/
+
+# Editors / OS
+.idea/
+*.iml
+.vscode/
+.DS_Store

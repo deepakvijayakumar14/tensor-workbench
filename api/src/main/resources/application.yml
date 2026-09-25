@@ -1,0 +1,60 @@
+spring:
+  application:
+    name: tensor-workbench-api
+  datasource:
+    url: ${DATABASE_URL:jdbc:postgresql://localhost:5432/workbench}
+    username: ${DATABASE_USER:workbench}
+    password: ${DATABASE_PASSWORD:workbench}
+    hikari:
+      maximum-pool-size: 10
+  flyway:
+    enabled: true
+  threads:
+    virtual:
+      enabled: true
+
+server:
+  port: 8080
+  shutdown: graceful
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+  endpoint:
+    health:
+      probes:
+        enabled: true
+
+springdoc:
+  api-docs:
+    path: /api/openapi
+  swagger-ui:
+    path: /api/docs
+
+workbench:
+  storage:
+    bucket: ${STORAGE_BUCKET:tensor-workbench}
+    endpoint: ${STORAGE_ENDPOINT:http://localhost:8333}
+    public-endpoint: ${STORAGE_PUBLIC_ENDPOINT:http://localhost:8333}
+    region: ${STORAGE_REGION:us-east-1}
+    access-key: ${STORAGE_ACCESS_KEY:workbench-dev}
+    secret-key: ${STORAGE_SECRET_KEY:workbench-dev-secret}
+    create-bucket: ${STORAGE_CREATE_BUCKET:true}
+  worker:
+    token: ${WORKER_TOKEN:dev-worker-token}
+  queue:
+    lease-duration: ${QUEUE_LEASE_DURATION:15s}
+    heartbeat-interval: ${QUEUE_HEARTBEAT_INTERVAL:5s}
+    max-attempts: ${QUEUE_MAX_ATTEMPTS:3}
+    backoff-base: ${QUEUE_BACKOFF_BASE:2s}
+    backoff-max: ${QUEUE_BACKOFF_MAX:60s}
+    recovery-interval: ${QUEUE_RECOVERY_INTERVAL:2s}
+  limits:
+    max-dimension: ${LIMIT_MAX_DIMENSION:512}
+    max-elements: ${LIMIT_MAX_ELEMENTS:16777216}
+    max-sweep-variants: ${LIMIT_MAX_SWEEP_VARIANTS:100}
+    preview-max-dimension: ${PREVIEW_MAX_DIMENSION:128}
+  demo:
+    allow-fault-injection: ${ALLOW_FAULT_INJECTION:true}
