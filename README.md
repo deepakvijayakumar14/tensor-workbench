@@ -11,19 +11,47 @@ sweep on a fixed three-slot worker pool, inspect heatmap slices, and download fu
 
 **Stack:** Kotlin + Spring Boot · Python + NumPy · PostgreSQL · SeaweedFS (S3) · React + TypeScript · Docker Compose
 
-## Run
+## Run locally
 
-Requires Docker only.
+**Prerequisites:** Docker with Compose v2. To run the test suites outside Docker you also need JDK 17+,
+[uv](https://docs.astral.sh/uv/) and Node 22+.
+
+**1. Start the stack.** This builds and starts Postgres, SeaweedFS, the API, the worker and the UI, then
+waits until everything is healthy. The first build takes a few minutes; later starts take seconds.
 
 ```bash
-docker compose up --build --wait   # open http://localhost:3000 (API docs: /api/docs)
-./scripts/demo.sh                   # optional: the same flow scripted from the CLI
-docker compose down -v              # stop and delete all data
+docker compose up --build --wait
 ```
 
-**Demo:** generate a 128³ dataset → submit gain 1–20 with *Demo failure* checked → watch at most 3 runs
-execute and child #3 retry after a transient failure → click a result to scrub slices → download the
-`.npy` file.
+**2. Try it** at http://localhost:3000 (API docs at `/api/docs`):
+
+1. *Generate an input tensor:* keep 128×128×128, seed 42, then click **Generate dataset**.
+2. *Submit work:* gain 1 → 20, step 1, *Demo* checked, then click **Submit sweep (20 runs)**.
+3. *Monitor:* the three slot dots fill and the timeline never exceeds three lanes. Child #3 fails (red),
+   then succeeds on retry as `#3·2`.
+4. *Inspect a result:* click a finished row, scrub the slice slider (X/Y/Z), then click **Download full
+   result**.
+
+**3. Scripted demo (optional).** Runs the same flow from the CLI and checks the downloaded file's SHA-256.
+
+```bash
+./scripts/demo.sh
+```
+
+**4. Run the tests** (commands are in the [Tests](#tests) table). The API tests start their own
+throwaway containers, so Docker must be running. The end-to-end tests need the stack from step 1.
+
+**5. Try the failure handling.** During a sweep, simulate a crash:
+
+```bash
+docker compose kill -s SIGKILL worker
+docker compose start worker
+```
+
+Finished runs stay intact, and interrupted runs are retried after their 15 s lease expires.
+`docker compose restart worker` (a graceful stop) hands work back immediately instead.
+
+**6. Stop.** `docker compose down` stops the stack; add `-v` to delete all data.
 
 ## How it works
 
