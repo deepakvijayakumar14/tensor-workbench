@@ -1,4 +1,4 @@
-import { useState, type FormEvent } from "react";
+import { useEffect, useState, type FormEvent } from "react";
 import { api, type CreateDatasetBody } from "../api/client";
 import type { Dataset, SystemInfo } from "../api/types";
 import { usePolling } from "../hooks/usePolling";
@@ -23,6 +23,12 @@ export function DatasetPanel({
     intervalMs: 1500,
     keepPolling: (page) => page.items.some((d) => d.status === "QUEUED" || d.status === "GENERATING"),
   });
+  // After a reload, default to the newest ready dataset so the submit form is usable immediately.
+  useEffect(() => {
+    const newestReady = list.data?.items.find((d) => d.status === "READY");
+    if (!selectedId && newestReady) onSelect(newestReady);
+  }, [list.data, selectedId, onSelect]);
+
   const { submit, inFlight, error, fieldErrors, retryPending } = useSubmit((key: string, body: CreateDatasetBody) =>
     api.createDataset(key, body),
   );

@@ -1,5 +1,6 @@
 package dev.tensorworkbench.api
 
+import dev.tensorworkbench.api.artifact.OrphanCleanupService
 import dev.tensorworkbench.api.queue.WorkQueueService
 import dev.tensorworkbench.api.support.IntegrationTest
 import org.junit.jupiter.api.Test
@@ -17,6 +18,9 @@ class QueueIT : IntegrationTest() {
 
     @Autowired
     lateinit var queue: WorkQueueService
+
+    @Autowired
+    lateinit var orphans: OrphanCleanupService
 
     private fun fail(task: tools.jackson.databind.JsonNode, category: String) =
         internal("/attempts/${attemptId(task)}/fail", mapOf("leaseToken" to task["leaseToken"].asLong(), "category" to category, "message" to "test"))
@@ -151,6 +155,11 @@ class QueueIT : IntegrationTest() {
         assertEquals(2, detail["run"]["result"]["acceptedAttemptNumber"].asInt())
         val keys = detail["artifacts"].let { a -> (0 until a.size()).map { a[it]["objectKey"].asString() } }
         assertTrue(keys.all { it.startsWith(current["objectPrefix"].asString()) }, "accepted keys were $keys")
+
+        // The stale upload is an unreferenced orphan: reported by cleanup, never served.
+        val report = orphans.cleanup(java.time.Duration.ZERO, dryRun = true)
+        assertTrue(report.orphanedKeys.any { it.startsWith(stale["objectPrefix"].asString()) })
+        assertTrue(report.orphanedKeys.none { it in keys })
     }
 
     @Test

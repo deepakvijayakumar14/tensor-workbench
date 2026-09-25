@@ -26,9 +26,12 @@ def main() -> None:
     shutdown = ctx.Event()
     active = ctx.Value("i", 0)  # computations running right now, across all slots
 
+    # The handler only records the request. Calling shutdown.set() here could deadlock:
+    # the main thread may be inside a wait on the same multiprocessing primitive.
+    stop_requested: list[int] = []
+
     def request_shutdown(signum: int, _frame: object) -> None:
-        log.info("Received signal %s; stopping slots", signum)
-        shutdown.set()
+        stop_requested.append(signum)
 
     signal.signal(signal.SIGTERM, request_shutdown)
     signal.signal(signal.SIGINT, request_shutdown)
@@ -43,15 +46,17 @@ def main() -> None:
         cfg.slots, cfg.api_url, cfg.synthetic_delay_seconds, cfg.slab_bytes,
     )
     slots = {i: start(i) for i in range(cfg.slots)}
-    while not shutdown.is_set():
+    while not stop_requested:
         for index, process in list(slots.items()):
-            if not process.is_alive() and not shutdown.is_set():
+            if not process.is_alive() and not stop_requested:
                 # A crashed slot is replaced; its task's lease simply expires and is retried.
                 log.error("Slot %d exited with code %s; restarting", index, process.exitcode)
                 time.sleep(1)
                 slots[index] = start(index)
-        shutdown.wait(1.0)
+        time.sleep(0.5)
 
+    log.info("Received signal %s; stopping slots", stop_requested[0])
+    shutdown.set()  # in-flight tasks stop at the next slab and report WORKER_SHUTDOWN (retryable)
     deadline = time.monotonic() + cfg.shutdown_grace_seconds
     for process in slots.values():
         process.join(max(0.1, deadline - time.monotonic()))

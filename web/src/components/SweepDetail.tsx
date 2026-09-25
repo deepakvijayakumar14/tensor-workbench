@@ -80,7 +80,7 @@ export function SweepDetail({
         <Count label="Running" value={c.running} kind="running" />
         <Count label="Succeeded" value={c.succeeded} kind="succeeded" />
         <Count label="Failed" value={c.failed} kind="failed" />
-        <Count label="Retries" value={s.retries} kind="retries" />
+        <Count label="Retry attempts" value={s.retries} kind="retries" />
       </div>
       {!done && c.succeeded > 0 && <p className="muted small">Partial results are available below while the rest run.</p>}
 

@@ -9,16 +9,30 @@ import { SubmitPanel } from "./components/SubmitPanel";
 import { SweepDetail } from "./components/SweepDetail";
 import { WorkList } from "./components/WorkList";
 
+/** Selection lives in the URL hash (#sweep=…&run=…) so a refresh or shared link keeps it. */
+function readHash(): { sweep: string | null; run: string | null } {
+  const params = new URLSearchParams(window.location.hash.slice(1));
+  return { sweep: params.get("sweep"), run: params.get("run") };
+}
+
 export function App() {
   const [info, setInfo] = useState<SystemInfo | null>(null);
   const [dataset, setDataset] = useState<Dataset | null>(null);
-  const [sweepId, setSweepId] = useState<string | null>(null);
-  const [runId, setRunId] = useState<string | null>(null);
+  const [sweepId, setSweepId] = useState<string | null>(() => readHash().sweep);
+  const [runId, setRunId] = useState<string | null>(() => readHash().run);
   const [listVersion, setListVersion] = useState(0);
 
   useEffect(() => {
     api.systemInfo().then(setInfo).catch(() => setInfo(null));
   }, []);
+
+  useEffect(() => {
+    const params = new URLSearchParams();
+    if (sweepId) params.set("sweep", sweepId);
+    if (runId) params.set("run", runId);
+    const hash = params.toString();
+    window.history.replaceState(null, "", hash ? `#${hash}` : window.location.pathname);
+  }, [sweepId, runId]);
 
   // A freshly created dataset is QUEUED; follow it until it is READY so the submit form can use it.
   useEffect(() => {

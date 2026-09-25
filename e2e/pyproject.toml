@@ -1,0 +1,16 @@
+[project]
+name = "tensor-workbench-e2e"
+version = "0.1.0"
+description = "Acceptance tests that drive the running Docker Compose stack"
+requires-python = ">=3.12,<3.14"
+dependencies = [
+    "numpy==2.5.3",
+    "requests==2.34.2",
+    "pytest==9.1.1",
+]
+
+[tool.uv]
+package = false
+
+[tool.pytest.ini_options]
+addopts = "-v -p no:cacheprovider"
